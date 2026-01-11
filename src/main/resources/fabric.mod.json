@@ -1,31 +1,31 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "namedheadsreforged",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Named Heads Reforged",
+	"description": "A Fabric port of the classic Named Heads mod by l4mrh4x0r (Willem Mulder), displaying player names above player skull blocks when looking at them.",
 	"authors": [
-		"Me!"
+		"JesusMRS05",
+		"l4mrh4x0r (Willem Mulder) (original mod creator)"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/JesusMRS05/namedheads-reforged-fabric"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
-	"environment": "*",
+	"icon": "assets/namedheadsreforged/icon.png",
+	"environment": "client",
 	"entrypoints": {
 		"main": [
-			"com.example.ExampleMod"
+			"com.github.jesusmrs05.ExampleMod"
 		],
 		"client": [
-			"com.example.ExampleModClient"
+			"com.github.jesusmrs05.NamedHeadsReforgedClient"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
+		"namedheadsreforged.mixins.json",
 		{
-			"config": "modid.client.mixins.json",
+			"config": "namedheadsreforged.client.mixins.json",
 			"environment": "client"
 		}
 	],
