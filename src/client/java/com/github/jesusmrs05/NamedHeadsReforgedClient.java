@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.text.Text;
@@ -50,13 +51,17 @@ public class NamedHeadsReforgedClient implements ClientModInitializer {
             return;
         }
 
-        var profile = skull.getOwner();
-        if (profile == null || profile.getName().isEmpty()) {
+        ProfileComponent profile = skull.getOwner();
+        if (profile == null) {
             removeDisplay(mc);
             return;
         }
 
-        String name = profile.getName().get();
+        String name = profile.name().orElse(null);
+        if (name == null || name.isBlank()) {
+            removeDisplay(mc);
+            return;
+        }
 
         ensureDisplay(mc);
         updateDisplay(mc, pos, name);
