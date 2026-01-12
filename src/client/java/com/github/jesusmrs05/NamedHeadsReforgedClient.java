@@ -51,12 +51,12 @@ public class NamedHeadsReforgedClient implements ClientModInitializer {
         }
 
         var profile = skull.getOwner();
-        if (profile == null || profile.getName().isEmpty()) {
+        if (profile == null || profile.name().isEmpty()) {
             removeDisplay(mc);
             return;
         }
 
-        String name = profile.getName().get();
+        String name = profile.name().get();
 
         ensureDisplay(mc);
         updateDisplay(mc, pos, name);
