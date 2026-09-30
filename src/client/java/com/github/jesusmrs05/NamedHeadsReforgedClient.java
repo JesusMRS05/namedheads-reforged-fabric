@@ -2,92 +2,96 @@ package com.github.jesusmrs05;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.decoration.DisplayEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class NamedHeadsReforgedClient implements ClientModInitializer {
 
-    private DisplayEntity.TextDisplayEntity nameDisplay;
+    private Display.TextDisplay nameDisplay;
 
     @Override
     public void onInitializeClient() {
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
     }
 
-    private void onClientTick(MinecraftClient mc) {
-        if (mc.world == null || mc.player == null) {
-            removeDisplay(mc);
+    private void onClientTick(Minecraft mc) {
+        if (mc.level == null || mc.player == null) {
+            removeDisplay();
             return;
         }
 
-        if (mc.crosshairTarget == null ||
-                mc.crosshairTarget.getType() != HitResult.Type.BLOCK) {
-            removeDisplay(mc);
+        if (mc.hitResult == null ||
+                mc.hitResult.getType() != HitResult.Type.BLOCK) {
+            removeDisplay();
             return;
         }
 
-        BlockHitResult hit = (BlockHitResult) mc.crosshairTarget;
+        BlockHitResult hit = (BlockHitResult) mc.hitResult;
         BlockPos pos = hit.getBlockPos();
 
-        BlockState state = mc.world.getBlockState(pos);
+        BlockState state = mc.level.getBlockState(pos);
         if (state.getBlock() != Blocks.PLAYER_HEAD &&
                 state.getBlock() != Blocks.PLAYER_WALL_HEAD) {
-            removeDisplay(mc);
+            removeDisplay();
             return;
         }
 
-        if (!(mc.world.getBlockEntity(pos) instanceof SkullBlockEntity skull)) {
-            removeDisplay(mc);
+        if (!(mc.level.getBlockEntity(pos) instanceof SkullBlockEntity skull)) {
+            removeDisplay();
             return;
         }
 
-        var profile = skull.getOwner();
-        if (profile == null || profile.getName().isEmpty()) {
-            removeDisplay(mc);
+        var profile = skull.getOwnerProfile();
+        if (profile == null || profile.name().isEmpty()) {
+            removeDisplay();
             return;
         }
 
-        String name = profile.getName().get();
+        String name = profile.name().get();
 
         ensureDisplay(mc);
-        updateDisplay(mc, pos, name);
+        updateDisplay(pos, name);
     }
 
-    private void ensureDisplay(MinecraftClient mc) {
-        if (nameDisplay != null && nameDisplay.isAlive()) return;
+    private void ensureDisplay(Minecraft mc) {
+        if (nameDisplay != null && nameDisplay.isAlive()) {
+            return;
+        }
 
-        nameDisplay = new DisplayEntity.TextDisplayEntity(
-                EntityType.TEXT_DISPLAY,
-                mc.world
+        nameDisplay = new Display.TextDisplay(
+                EntityTypes.TEXT_DISPLAY,
+                mc.level
         );
 
-        nameDisplay.setBillboardMode(DisplayEntity.BillboardMode.CENTER);
-        nameDisplay.setBackground(0x40000000);
+        nameDisplay.setId(-1);
+
+        nameDisplay.setBillboardConstraints(
+                Display.BillboardConstraints.CENTER
+        );
+        nameDisplay.setBackgroundColor(0x40000000);
         nameDisplay.setViewRange(64.0f);
-        byte flags = 0;
-        flags |= DisplayEntity.TextDisplayEntity.SEE_THROUGH_FLAG;
-        nameDisplay.setDisplayFlags(flags);
+        nameDisplay.setFlags(Display.TextDisplay.FLAG_SEE_THROUGH);
 
-        mc.world.addEntity(nameDisplay);
+        mc.level.addEntity(nameDisplay);
     }
 
-    private void updateDisplay(MinecraftClient mc, BlockPos pos, String name) {
-        Vec3d textPos = Vec3d.ofCenter(pos).add(0.0, 0.25, 0.0);
+    private void updateDisplay(BlockPos pos, String name) {
+        Vec3 textPos = Vec3.atCenterOf(pos).add(0.0, 0.25, 0.0);
 
-        nameDisplay.setPosition(textPos);
-        nameDisplay.setText(Text.literal(name));
+        nameDisplay.setPos(textPos);
+        nameDisplay.setText(Component.literal(name));
     }
 
-    private void removeDisplay(MinecraftClient mc) {
+    private void removeDisplay() {
         if (nameDisplay != null) {
             nameDisplay.discard();
             nameDisplay = null;
